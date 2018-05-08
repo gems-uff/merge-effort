@@ -2,6 +2,9 @@ from pygit2 import *
 import os
 import sys
 import shutil
+import argparse
+import time
+
 
 
 class Action(object):
@@ -40,7 +43,7 @@ def set_actions(diff_a_b):
 	
 	for d in diff_a_b:
 		file_name = d.delta.new_file.path
-		
+
 		for h in d.hunks:
 			
 			for l in h.lines:
@@ -63,7 +66,6 @@ def calculate_metrics(commits):
 			diff_base_final = repo.diff(base_version, commit)
 			diff_base_parent1 = repo.diff(base_version, parent1)
 			diff_base_parent2 = repo.diff(base_version, parent2)
-
 
 			merge_actions = set_actions(diff_base_final)
 			parent1_actions = set_actions(diff_base_parent1)
@@ -115,21 +117,42 @@ def calculate_metrics(commits):
 	return commits_metrics	
 
 
-
 #repo_url = 'git://github.com/tayanemoura/teste_merge.git'
 
-repo_url = sys.argv[1]
+parser = argparse.ArgumentParser(description='Merge effort analysis')
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument("--url", help="set an url for a git repository")
+group.add_argument("--local", help="set the path of a local git repository")
+parser.add_argument("--commit", help="set the commit to analyse. Default: all merge commits")
+args = parser.parse_args()
 
-current_working_directory = os.getcwd()
 
-repo_path = current_working_directory + "/" + sys.argv[2]
+if args.url:
 
-repo = clone_repository(repo_url, repo_path) 
+	repo_url = args.url
+	current_working_directory = os.getcwd()
 
-commits_metrics = calculate_metrics(repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE))
+	repo_path = current_working_directory + "/" + str(time.time())
+
+	repo = clone_repository(repo_url, repo_path) 
+
+elif args.local:
+	repo = Repository(args.local)
+
+
+commits = []
+if args.commit:
+	commits = [repo.get(args.commit)]
+
+else:
+	commits = repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE)
+
+commits_metrics = calculate_metrics(commits)
 
 print(commits_metrics)
 
-shutil.rmtree(repo_path)
+if args.url:
+	shutil.rmtree(repo_path)
+
 		
 
