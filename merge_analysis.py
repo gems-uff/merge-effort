@@ -1,61 +1,62 @@
 from pygit2 import *
 import os
-import sys
 import shutil
 import argparse
 import time
 
 
-
-class Action(object):
-	def __init__(self, content, file_name, action, new_line, old_line):
-		self.content = content
-		self.file_name = file_name
-		self.action = action
-		self.new_line = new_line
-		self.old_line = old_line
-
-
-def print_actions(list_actions):
-	for a in list_actions:
-		print("-------------------------------------------------------------------- \nPrinting Line:")
-		print ("File: " + a.file_name)
-		print ("Content: " + a.content)
-		print ("New line: " +str(a.new_line))
-		print ("Old line: " +str(a.old_line))
-		print ("File action: " + a.action)
-		print("-------------------------------------------------------------------- \n")
-
-
-def actions_to_set(list_actions):
-	set_actions = set()
-
-	for action in list_actions:
-		aux = (action.file_name, action.content, action.action)
-
-		set_actions.add(aux)
-
-	return set_actions
-
-
-def set_actions(diff_a_b):
-	list_actions = []
-	
+def get_actions(diff_a_b):
+	actions = set()
 	for d in diff_a_b:
 		file_name = d.delta.new_file.path
-
 		for h in d.hunks:
-			
 			for l in h.lines:
-				action = Action(l.content, file_name, l.origin, l.new_lineno, l.old_lineno)
-				list_actions.append(action)
+				aux = (file_name, l.content, l.origin)
+				actions.add(aux)
 
-	return list_actions
+	return actions
 
-def calculate_metrics(commits):
+def clone(url):
+	repo_url = url
+	current_working_directory = os.getcwd()
+	repo_path = current_working_directory + "/" + str(time.time())
+	repo = clone_repository(repo_url, repo_path) 
+
+	return repo
+
+
+def calculate_rework(parent1_actions, parent2_actions, parents_actions):
+	rework_actions = set(parent1_actions).intersection(parent2_actions)
+	rework_actions_relative = '{:.0%}'.format(len(rework_actions) / len(parents_actions))
+	rework_actions_absolute = len(rework_actions)
+
+	return [rework_actions_relative, rework_actions_absolute]
+
+def calculate_no_effort(merge_actions, parents_actions):
+	no_effort = merge_actions.intersection(parents_actions)
+	no_effort_relative = '{:.0%}'.format(len(no_effort) / len(merge_actions))
+	no_effort_absolute = len(no_effort)
+
+	return [no_effort_relative, no_effort_absolute]
+
+def calculate_wasted_effort(parents_actions, merge_actions):
+	wasted_actions = parents_actions - merge_actions
+	wasted_actions_relative = '{:.0%}'.format(len(wasted_actions) / len(parents_actions))
+	wasted_actions_absolute = len(wasted_actions)
+
+	return [wasted_actions_relative, wasted_actions_absolute]
+
+def calculate_additional_effort(merge_actions, parents_actions):
+	additional_actions = merge_actions - parents_actions
+	additional_actions_relative = '{:.0%}'.format(len(additional_actions) / len(merge_actions))
+	additional_actions_absolute = len(additional_actions)
+
+	return [additional_actions_relative, additional_actions_absolute]
+
+
+def analyse(commits, repo):
 	commits_metrics = {}
 	for commit in commits:
-
 		if (len(commit.parents)==2):
 			parent1 = commit.parents[0]
 			parent2 = commit.parents[1]
@@ -67,92 +68,71 @@ def calculate_metrics(commits):
 			diff_base_parent1 = repo.diff(base_version, parent1)
 			diff_base_parent2 = repo.diff(base_version, parent2)
 
-			merge_actions = set_actions(diff_base_final)
-			parent1_actions = set_actions(diff_base_parent1)
-			parent2_actions = set_actions(diff_base_parent2)
-			
-			merge_actions_set = actions_to_set(merge_actions)
-			parent1_actions_set = actions_to_set(parent1_actions)
-			parent2_actions_set = actions_to_set(parent2_actions)
+			merge_actions = get_actions(diff_base_final)
+			parent1_actions = get_actions(diff_base_parent1)
+			parent2_actions = get_actions(diff_base_parent2)
 
-			metrics = {}
-
-			parents_actions_set = set(parent1_actions_set).union(parent2_actions_set)
-
-			rework_actions = set(parent1_actions_set).intersection(parent2_actions_set)
-			rework_actions_relative = '{:.0%}'.format(len(rework_actions) / len(parents_actions_set))
-			rework_actions_absolute = len(rework_actions)
-
-			metrics['Parents rework - relative'] = rework_actions_relative
-			metrics['Parents rework - absolute'] = rework_actions_absolute
-
-
-			wasted_actions = parents_actions_set - merge_actions_set
-			wasted_actions_relative = '{:.0%}'.format(len(wasted_actions) / len(parents_actions_set))
-			wasted_actions_absolute = len(wasted_actions)
-
-			metrics['Wasted actions - relative'] = wasted_actions_relative
-			metrics['Wasted actions - absolute'] = wasted_actions_absolute
-
-
-			additional_actions = merge_actions_set - parents_actions_set
-			additional_actions_relative = '{:.0%}'.format(len(additional_actions) / len(merge_actions_set))
-			additional_actions_absolute = len(additional_actions)
-
-			metrics['Additional actions - relative'] = additional_actions_relative
-			metrics['Additional actions - absolute'] = additional_actions_absolute
-
-
-			no_effort = merge_actions_set.intersection(parents_actions_set)
-			no_effort_relative = '{:.0%}'.format(len(no_effort) / len(merge_actions_set))
-			no_effort_absolute = len(no_effort)
-
-
-			metrics['No effort actions - relative'] = no_effort_relative
-			metrics['No effort actions - absolute'] = no_effort_absolute
-
-
-			commits_metrics[commit.hex] = metrics
+			commits_metrics[commit.hex] = calculate_metrics(merge_actions, parent1_actions, parent2_actions)
 
 	return commits_metrics	
 
 
-#repo_url = 'git://github.com/tayanemoura/teste_merge.git'
+def calculate_metrics(merge_actions, parent1_actions, parent2_actions):	
+	metrics = {}
 
-parser = argparse.ArgumentParser(description='Merge effort analysis')
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument("--url", help="set an url for a git repository")
-group.add_argument("--local", help="set the path of a local git repository")
-parser.add_argument("--commit", help="set the commit to analyse. Default: all merge commits")
-args = parser.parse_args()
+	parents_actions = set(parent1_actions).union(parent2_actions)
 
+	rework = calculate_rework(parent1_actions, parent2_actions, parents_actions)
+	metrics['Parents rework - relative'] = rework[0]
+	metrics['Parents rework - absolute'] = rework[1]
 
-if args.url:
+	wasted = calculate_wasted_effort(parents_actions, merge_actions)
+	metrics['Wasted actions - relative'] = wasted[0]
+	metrics['Wasted actions - absolute'] = wasted[1]
 
-	repo_url = args.url
-	current_working_directory = os.getcwd()
-
-	repo_path = current_working_directory + "/" + str(time.time())
-
-	repo = clone_repository(repo_url, repo_path) 
-
-elif args.local:
-	repo = Repository(args.local)
+	additional = calculate_additional_effort(merge_actions, parents_actions)
+	metrics['Additional actions - relative'] = additional[0]
+	metrics['Additional actions - absolute'] = additional[1]
 
 
-commits = []
-if args.commit:
-	commits = [repo.get(args.commit)]
+	no_effort = calculate_no_effort(merge_actions, parents_actions)
+	metrics['No effort actions - relative'] = no_effort[0]
+	metrics['No effort actions - absolute'] = no_effort[1]
 
-else:
-	commits = repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE)
+	return metrics
 
-commits_metrics = calculate_metrics(commits)
+			
+def main():
+	#local - /Users/tayanemoura/Documents/git/teste_merge
+	#url - 'git://github.com/tayanemoura/teste_merge.git'
+	parser = argparse.ArgumentParser(description='Merge effort analysis')
+	group = parser.add_mutually_exclusive_group(required=True)
+	group.add_argument("--url", help="set an url for a git repository")
+	group.add_argument("--local", help="set the path of a local git repository")
+	parser.add_argument("--commit", nargs='+', help="set the commit (or a list of commits separated by comma) to analyse. Default: all merge commits")
+	args = parser.parse_args()
 
-print(commits_metrics)
+	if args.url:
+		repo = clone(args.url) 
 
-if args.url:
-	shutil.rmtree(repo_path)
+	elif args.local:
+		repo = Repository(args.local)
 
-		
+	commits = []
+	if args.commit:
+		for commit in args.commit:
+			commits.append(repo.get(commit))
+
+	else:
+		commits = repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE)
+
+	commits_metrics = analyse(commits, repo)
+	print(commits_metrics)
+
+	if args.url:
+		shutil.rmtree(repo.workdir)
+
+	
+if __name__ == '__main__':
+	main()	
 
