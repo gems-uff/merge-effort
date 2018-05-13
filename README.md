@@ -52,6 +52,7 @@ $ cd libgit2-0.27.0/
 $ cmake .
 $ make
 $ sudo make install
+$ sudo ldconfig
 ```
 
 and then install pygit2 using pip 
@@ -100,8 +101,8 @@ python merge_analysis.py --url [git_url] --commit [commit1 commit2]
 ## Team
 
 
-Tayane Silva Fernandes de Moura (UFF, Brazil)
-Leonardo Gresta Paulino Murta (UFF, Brazil)
+* Tayane Silva Fernandes de Moura (UFF, Brazil)
+* Leonardo Gresta Paulino Murta (UFF, Brazil)
 
 
 ## License
