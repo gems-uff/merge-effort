@@ -1,7 +1,9 @@
 import pytest 
-import merge_analysis
 import pygit2
-
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import mergeeffort.merge_analysis as merge_analysis
 
 def test_no_effort():
 	parents_actions = {('new_code.py', 'print ("Hello IC")\n', '+'), ('new_code.py', '\n\\ No newline at end of file\n', '>'), ('new_code.py', 'print ("Hello Uff")\n', '+'), ('new_code.py', 'print ("Hello World")', '-')}

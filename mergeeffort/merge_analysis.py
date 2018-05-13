@@ -43,14 +43,13 @@ def calculate_wasted_effort(parents_actions, merge_actions):
 	wasted_actions = parents_actions - merge_actions
 	wasted_actions_relative = '{:.0%}'.format(len(wasted_actions) / len(parents_actions))
 	wasted_actions_absolute = len(wasted_actions)
-
 	return [wasted_actions_relative, wasted_actions_absolute]
 
 def calculate_additional_effort(merge_actions, parents_actions):
 	additional_actions = merge_actions - parents_actions
 	additional_actions_relative = '{:.0%}'.format(len(additional_actions) / len(merge_actions))
 	additional_actions_absolute = len(additional_actions)
-
+	
 	return [additional_actions_relative, additional_actions_absolute]
 
 
