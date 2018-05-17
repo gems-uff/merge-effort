@@ -29,6 +29,7 @@ def test_additional():
 
 
 def test_metrics():
-	repo = pygit2.Repository("/Users/tayanemoura/Documents/git/teste_merge")
+	repo = merge_analysis.clone("https://github.com/tayanemoura/teste_merge")
 	commits = [repo.get("175b655a2002891ba735ad53ee679b3718c6d997")]
 	assert(merge_analysis.analyse(commits, repo) == {'175b655a2002891ba735ad53ee679b3718c6d997': {'Parents rework - relative': '50%', 'Parents rework - absolute': 2, 'Wasted actions - relative': '50%', 'Wasted actions - absolute': 2, 'Additional actions - relative': '33%', 'Additional actions - absolute': 1, 'No effort actions - relative': '67%', 'No effort actions - absolute': 2}})
+	merge_analysis.delete_repo_folder(repo.workdir)

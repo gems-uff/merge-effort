@@ -19,7 +19,7 @@ def get_actions(diff_a_b):
 def clone(url):
 	repo_url = url
 	current_working_directory = os.getcwd()
-	repo_path = current_working_directory + "/" + str(time.time())
+	repo_path = current_working_directory + "/build/" + str(time.time())
 	repo = clone_repository(repo_url, repo_path) 
 
 	return repo
@@ -75,6 +75,8 @@ def analyse(commits, repo):
 
 	return commits_metrics	
 
+def delete_repo_folder(folder):
+		shutil.rmtree(folder)
 
 def calculate_metrics(merge_actions, parent1_actions, parent2_actions):	
 	metrics = {}
@@ -129,7 +131,7 @@ def main():
 	print(commits_metrics)
 
 	if args.url:
-		shutil.rmtree(repo.workdir)
+		delete_repo_folder(repo.workdir)
 
 	
 if __name__ == '__main__':
