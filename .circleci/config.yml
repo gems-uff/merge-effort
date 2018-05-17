@@ -32,6 +32,7 @@ jobs:
             sudo make install
             sudo ldconfig
             cd ..
+            rm -rf v0.27.0.tar.gz libgit2-0.27.0/
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
