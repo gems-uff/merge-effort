@@ -63,9 +63,9 @@ def analyse(commits, repo):
 			base = repo.merge_base(parent1.hex, parent2.hex)
 			base_version = repo.get(base)
 			
-			diff_base_final = repo.diff(base_version, commit)
-			diff_base_parent1 = repo.diff(base_version, parent1)
-			diff_base_parent2 = repo.diff(base_version, parent2)
+			diff_base_final = repo.diff(base_version, commit, context_lines=0)
+			diff_base_parent1 = repo.diff(base_version, parent1, context_lines=0)
+			diff_base_parent2 = repo.diff(base_version, parent2, context_lines=0)
 
 			merge_actions = get_actions(diff_base_final)
 			parent1_actions = get_actions(diff_base_parent1)
