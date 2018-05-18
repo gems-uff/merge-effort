@@ -23,7 +23,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo apt-get install cmake
+            sudo apt-get install cmake libssh2-1-dev
             wget https://github.com/libgit2/libgit2/archive/v0.27.0.tar.gz 
             tar xzf v0.27.0.tar.gz
             cd libgit2-0.27.0/
