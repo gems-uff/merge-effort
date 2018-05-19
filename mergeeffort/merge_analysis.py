@@ -27,30 +27,18 @@ def clone(url):
 
 def calculate_rework(parent1_actions, parent2_actions, parents_actions):
 	rework_actions = set(parent1_actions).intersection(parent2_actions)
-	rework_actions_relative = '{:.0%}'.format(len(rework_actions) / len(parents_actions))
-	rework_actions_absolute = len(rework_actions)
-
-	return [rework_actions_relative, rework_actions_absolute]
-
-def calculate_no_effort(merge_actions, parents_actions):
-	no_effort = merge_actions.intersection(parents_actions)
-	no_effort_relative = '{:.0%}'.format(len(no_effort) / len(merge_actions))
-	no_effort_absolute = len(no_effort)
-
-	return [no_effort_relative, no_effort_absolute]
+	rework_actions= len(rework_actions)
+	return rework_actions
 
 def calculate_wasted_effort(parents_actions, merge_actions):
 	wasted_actions = parents_actions - merge_actions
-	wasted_actions_relative = '{:.0%}'.format(len(wasted_actions) / len(parents_actions))
-	wasted_actions_absolute = len(wasted_actions)
-	return [wasted_actions_relative, wasted_actions_absolute]
+	wasted_actions = len(wasted_actions)
+	return wasted_actions
 
 def calculate_additional_effort(merge_actions, parents_actions):
 	additional_actions = merge_actions - parents_actions
-	additional_actions_relative = '{:.0%}'.format(len(additional_actions) / len(merge_actions))
-	additional_actions_absolute = len(additional_actions)
-	
-	return [additional_actions_relative, additional_actions_absolute]
+	additional_actions = len(additional_actions)
+	return additional_actions
 
 
 def analyse(commits, repo):
@@ -83,22 +71,13 @@ def calculate_metrics(merge_actions, parent1_actions, parent2_actions):
 
 	parents_actions = set(parent1_actions).union(parent2_actions)
 
-	rework = calculate_rework(parent1_actions, parent2_actions, parents_actions)
-	metrics['Parents rework - relative'] = rework[0]
-	metrics['Parents rework - absolute'] = rework[1]
+	metrics['branch1'] = len(parent1_actions)
+	metrics['branch2'] = len(parent2_actions)
+	metrics['merge'] = len(merge_actions)
 
-	wasted = calculate_wasted_effort(parents_actions, merge_actions)
-	metrics['Wasted actions - relative'] = wasted[0]
-	metrics['Wasted actions - absolute'] = wasted[1]
-
-	additional = calculate_additional_effort(merge_actions, parents_actions)
-	metrics['Additional actions - relative'] = additional[0]
-	metrics['Additional actions - absolute'] = additional[1]
-
-
-	no_effort = calculate_no_effort(merge_actions, parents_actions)
-	metrics['No effort actions - relative'] = no_effort[0]
-	metrics['No effort actions - absolute'] = no_effort[1]
+	metrics['Parents rework'] = calculate_rework(parent1_actions, parent2_actions, parents_actions)
+	metrics['Wasted actions']  = calculate_wasted_effort(parents_actions, merge_actions)
+	metrics['Additional actions'] = calculate_additional_effort(merge_actions, parents_actions)
 
 	return metrics
 
@@ -129,6 +108,7 @@ def main():
 
 	commits_metrics = analyse(commits, repo)
 	print(commits_metrics)
+
 
 	if args.url:
 		delete_repo_folder(repo.workdir)
