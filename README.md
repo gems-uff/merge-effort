@@ -1,46 +1,25 @@
 # Merge Effort
 
-This script aims to analyze the effort of merge in open source projects. In this regard, it calculates four metrics: the wasted effort, the additional effort, the no effort and also the rework of parents.
-
+This script aims to analyze the effort of merge in open source projects. In this regard, it calculates three metrics: the wasted effort, the additional effort, and also the rework of parents. Moreover, it also returns the total number of actions of each parent (branch 1 and branch 2) and the total number of actions added in the merge.
 ## Getting Started
 
 ### Prerequisites
 
-This project requires
+This project requires python, pygit2 and libgit2, and it was tested on the following versions:
 
 ```
-python
-pygit2
-libgit2
+python==3.6
+pygit2==0.27.0
+libgit2==0.27.0
 ```
 
-On Mac OS X you can install libgit2 using homebrew and then you can use pip to install pygit2.
+First of all, if you are using Mac OS or Linux you need to install libgit2.
 
-```
-$ brew install libgit2
-$ pip install pygit2
-```
-
-Or you can install pygit2 through requirements.txt
+On Mac OS you can install libgit2 using homebrew:
 
 ```
 $ brew install libgit2
-$ pip install -r requirements.txt
 ```
-
-
-On Windows 
-
-```
-$ pip install pygit2
-```
-
-Or you can install it through requirements.txt
-
-```
-$ pip install -r requirements.txt
-```
-
 
 On Linux you can install the latest version of libgit2 doing:
 
@@ -55,24 +34,19 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
-and then install pygit2 using pip 
-
-```
-$ pip install pygit2
-```
-
-
 For more information http://www.pygit2.org/install.html
 
-### Installing
-
-To install you just need to clone the repository:
+Finally, after cloning our repository
 
 ```
 $ git clone git@github.com:gems-uff/merge-effort.git
-
 ```
 
+you can install all requirements running: 
+
+```
+$ pip install -r requirements.txt
+```
 
 ## Basic Usage
 
