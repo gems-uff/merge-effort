@@ -1,7 +1,14 @@
 .DS_Store
 .pytest_cache
+
 *.pyc
 .cache
-/build
+
+*.egg
+*.egg-info
+
+build
+dist
+
 /tests/build
 /mergeeffort/build

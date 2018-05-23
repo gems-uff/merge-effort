@@ -36,16 +36,12 @@ $ sudo ldconfig
 
 For more information http://www.pygit2.org/install.html
 
-Finally, after cloning our repository
+### Installing
+
+To install merge-effort you should do:
 
 ```
-$ git clone git@github.com:gems-uff/merge-effort.git
-```
-
-you can install all requirements running: 
-
-```
-$ pip install -r requirements.txt
+$ pip install merge-effort
 ```
 
 ## Basic Usage
@@ -53,21 +49,21 @@ $ pip install -r requirements.txt
 To run the script with a local repository:
 
 ```
-python merge_analysis.py --local [path]
+merge-effort --local [path]
 
 ```
 
 or you can run it passing a git url:
 
 ```
-python merge_analysis.py --url [git_url]
+merge-effort --url [git_url]
 
 ```
 
 By defaul the script will analyze all merge commits in the repository, but you can pass one or more commits using their hash
 
 ```
-python merge_analysis.py --url [git_url] --commit [commit1 commit2]
+merge-effort --url [git_url] --commit [commit1 commit2]
 
 ```
 
