@@ -13,16 +13,19 @@ pygit2==0.27.0
 libgit2==0.27.0
 ```
 
-First of all, if you are using Mac OS or Linux you need to install libgit2.
+First of all, if you are using Mac OS or Linux you need to install libgit2. If you have Anaconda installed in your computer, you can simple do:
 
-On Mac OS you can install libgit2 using homebrew:
+```
+$ conda install -c conda-forge libgit2
+```
+
+Otherwise, on Mac OS you can install libgit2 using homebrew:
 
 ```
 $ brew install libgit2
 ```
 
-On Linux you can install the latest version of libgit2 doing:
-
+On Linux you can install the latest version of libgit2 by doing:
 
 ```
 $ wget https://github.com/libgit2/libgit2/archive/v0.27.0.tar.gz
