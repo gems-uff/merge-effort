@@ -1,6 +1,7 @@
 # Merge Effort
 
-This script aims to analyze the effort of merge in open source projects. In this regard, it calculates three metrics: the wasted effort, the additional effort, and also the rework of parents. Moreover, it also returns the total number of actions of each parent (branch 1 and branch 2) and the total number of actions added in the merge.
+This project aims at analyzing the merge effort of Git projects. In this regard, it calculates some metrics: the number of actions (i.e., lines added or removed) in each branch, the number of actions in the merge commit, the rework (similar actions in both branches), the wasted actions (actions in the branches that were not merged), and the additional actions (actions not in the branches that were added during the merge).
+
 ## Getting Started
 
 ### Prerequisites
