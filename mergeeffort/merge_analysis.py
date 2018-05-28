@@ -1,8 +1,12 @@
+from datetime import datetime
+startTime = datetime.now()
+
 from pygit2 import *
 import os
 import shutil
 import argparse
 import time
+import traceback
 
 
 def get_actions(diff_a_b):
@@ -43,23 +47,29 @@ def calculate_additional_effort(merge_actions, parents_actions):
 
 def analyse(commits, repo):
 	commits_metrics = {}
-	for commit in commits:
-		if (len(commit.parents)==2):
-			parent1 = commit.parents[0]
-			parent2 = commit.parents[1]
+	try:
+		for commit in commits:
+			if (len(commit.parents)==2):
+				parent1 = commit.parents[0]
+				parent2 = commit.parents[1]
+				base = repo.merge_base(parent1.hex, parent2.hex)
+				if(base): 
+					base_version = repo.get(base)
+					
+					diff_base_final = repo.diff(base_version, commit, context_lines=0)
+					diff_base_parent1 = repo.diff(base_version, parent1, context_lines=0)
+					diff_base_parent2 = repo.diff(base_version, parent2, context_lines=0)
 
-			base = repo.merge_base(parent1.hex, parent2.hex)
-			base_version = repo.get(base)
-			
-			diff_base_final = repo.diff(base_version, commit, context_lines=0)
-			diff_base_parent1 = repo.diff(base_version, parent1, context_lines=0)
-			diff_base_parent2 = repo.diff(base_version, parent2, context_lines=0)
+					merge_actions = get_actions(diff_base_final)
+					parent1_actions = get_actions(diff_base_parent1)
+					parent2_actions = get_actions(diff_base_parent2)
 
-			merge_actions = get_actions(diff_base_final)
-			parent1_actions = get_actions(diff_base_parent1)
-			parent2_actions = get_actions(diff_base_parent2)
-
-			commits_metrics[commit.hex] = calculate_metrics(merge_actions, parent1_actions, parent2_actions)
+					commits_metrics[commit.hex] = calculate_metrics(merge_actions, parent1_actions, parent2_actions)
+				else:
+					print(commit.hex + " - this merge doesn't have a base version")
+	except:
+		print ("Unexpected error")
+		print (traceback.format_exc())
 
 	return commits_metrics	
 
@@ -83,8 +93,6 @@ def calculate_metrics(merge_actions, parent1_actions, parent2_actions):
 
 			
 def main():
-	#local - /Users/tayanemoura/Documents/git/teste_merge
-	#url - 'git://github.com/tayanemoura/teste_merge.git'
 	parser = argparse.ArgumentParser(description='Merge effort analysis')
 	group = parser.add_mutually_exclusive_group(required=True)
 	group.add_argument("--url", help="set an url for a git repository")
@@ -109,9 +117,10 @@ def main():
 	commits_metrics = analyse(commits, repo)
 	print(commits_metrics)
 
-
 	if args.url:
 		delete_repo_folder(repo.workdir)
+
+	print(datetime.now() - startTime)
 
 	
 if __name__ == '__main__':
