@@ -1,7 +1,7 @@
 import setuptools
 setuptools.setup(
 	name='merge-effort',    
-	version='1.0',
+	version='1.0.1',
 	license='MIT',
 	url='https://github.com/gems-uff/merge-effort',
 	author='Tayane Moura and Leonardo Murta',
