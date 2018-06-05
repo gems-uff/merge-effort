@@ -45,7 +45,7 @@ def calculate_additional_effort(merge_actions, parents_actions):
 	return additional_actions
 
 
-def analyse(commits, repo):
+def analyse(commits, repo, detailed=False):
 	commits_metrics = {}
 	try:
 		for commit in commits:
@@ -64,7 +64,7 @@ def analyse(commits, repo):
 					parent1_actions = get_actions(diff_base_parent1)
 					parent2_actions = get_actions(diff_base_parent2)
 
-					commits_metrics[commit.hex] = calculate_metrics(merge_actions, parent1_actions, parent2_actions)
+					commits_metrics[commit.hex] = calculate_metrics(merge_actions, parent1_actions, parent2_actions, detailed)
 				else:
 					print(commit.hex + " - this merge doesn't have a base version")
 	except:
@@ -76,18 +76,23 @@ def analyse(commits, repo):
 def delete_repo_folder(folder):
 		shutil.rmtree(folder)
 
-def calculate_metrics(merge_actions, parent1_actions, parent2_actions):	
+def calculate_metrics(merge_actions, parent1_actions, parent2_actions, detailed):	
 	metrics = {}
 
 	parents_actions = set(parent1_actions).union(parent2_actions)
 
-	metrics['branch1'] = len(parent1_actions)
-	metrics['branch2'] = len(parent2_actions)
-	metrics['merge'] = len(merge_actions)
+	additional_metric = calculate_additional_effort(merge_actions, parents_actions)
+	metrics['merge effort'] = additional_metric/len(merge_actions)
 
-	metrics['rework'] = calculate_rework(parent1_actions, parent2_actions, parents_actions)
-	metrics['wasted']  = calculate_wasted_effort(parents_actions, merge_actions)
-	metrics['additional'] = calculate_additional_effort(merge_actions, parents_actions)
+	if(detailed):
+		metrics['branch1'] = len(parent1_actions)
+		metrics['branch2'] = len(parent2_actions)
+		metrics['merge'] = len(merge_actions)
+
+		metrics['rework'] = calculate_rework(parent1_actions, parent2_actions, parents_actions)
+		metrics['wasted']  = calculate_wasted_effort(parents_actions, merge_actions)
+		metrics['additional'] = additional_metric
+
 
 	return metrics
 
@@ -98,6 +103,7 @@ def main():
 	group.add_argument("--url", help="set an url for a git repository")
 	group.add_argument("--local", help="set the path of a local git repository")
 	parser.add_argument("--commit", nargs='+', help="set the commit (or a list of commits separated by comma) to analyse. Default: all merge commits")
+	parser.add_argument("--detailed",action='store_true', help="show all metrics (size of branch1, branch2 and merge, branches rework, wasted actions and additional actions")
 	args = parser.parse_args()
 
 	if args.url:
@@ -114,7 +120,7 @@ def main():
 	else:
 		commits = repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE)
 
-	commits_metrics = analyse(commits, repo)
+	commits_metrics = analyse(commits, repo, args.detailed)
 	print(commits_metrics)
 
 	if args.url:

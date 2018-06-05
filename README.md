@@ -77,6 +77,12 @@ merge-effort --url [git_url] --commit [commit1 commit2]
 
 ```
 
+By default the script will retun the merge effort, but if you want to see the other metrics you can set --detailed
+
+```
+merge-effort --url [git_url] --detailed
+
+```
 
 ## Team
 
