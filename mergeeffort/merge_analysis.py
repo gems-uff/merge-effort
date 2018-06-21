@@ -29,14 +29,15 @@ def clone(url):
 	return repo
 
 
-def calculate_rework(parent1_actions, parent2_actions, parents_actions):
+def calculate_rework(parent1_actions, parent2_actions):
 	rework_actions = set(parent1_actions).intersection(parent2_actions)
 	rework_actions= len(rework_actions)
 	return rework_actions
 
-def calculate_wasted_effort(parents_actions, merge_actions):
-	wasted_actions = parents_actions - merge_actions
-	wasted_actions = len(wasted_actions)
+def calculate_wasted_effort(parent1_actions, parent2_actions, merge_actions):
+	wasted_actions_parent1 = parent1_actions - merge_actions 
+	wasted_actions_parent2 = parent2_actions - merge_actions 
+	wasted_actions = len(wasted_actions_parent1) + len(wasted_actions_parent2)
 	return wasted_actions
 
 def calculate_additional_effort(merge_actions, parents_actions):
@@ -89,8 +90,8 @@ def calculate_metrics(merge_actions, parent1_actions, parent2_actions, detailed)
 		metrics['branch2'] = len(parent2_actions)
 		metrics['merge'] = len(merge_actions)
 
-		metrics['rework'] = calculate_rework(parent1_actions, parent2_actions, parents_actions)
-		metrics['wasted']  = calculate_wasted_effort(parents_actions, merge_actions)
+		metrics['rework'] = calculate_rework(parent1_actions, parent2_actions)
+		metrics['wasted']  = calculate_wasted_effort(parent1_actions, parent2_actions, merge_actions)
 		metrics['additional'] = additional_metric
 
 
