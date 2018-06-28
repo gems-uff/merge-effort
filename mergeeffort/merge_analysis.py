@@ -1,5 +1,6 @@
 from datetime import datetime
 startTime = datetime.now()
+from collections import Counter
 
 from pygit2 import *
 import os
@@ -10,14 +11,12 @@ import traceback
 
 
 def get_actions(diff_a_b):
-	actions = set()
+	actions = Counter()
 	for d in diff_a_b:
 		file_name = d.delta.new_file.path
 		for h in d.hunks:
 			for l in h.lines:
-				aux = (file_name, l.content, l.origin)
-				actions.add(aux)
-
+				actions.update([file_name+l.origin+l.content])
 	return actions
 
 def clone(url):
@@ -30,23 +29,19 @@ def clone(url):
 
 
 def calculate_rework(parent1_actions, parent2_actions):
-	rework_actions = set(parent1_actions).intersection(parent2_actions)
-	rework_actions= len(rework_actions)
-	return rework_actions
+	rework_actions = parent1_actions & parent2_actions
+	return (sum(rework_actions.values()))
 
-def calculate_wasted_effort(parent1_actions, parent2_actions, merge_actions):
-	wasted_actions_parent1 = parent1_actions - merge_actions 
-	wasted_actions_parent2 = parent2_actions - merge_actions 
-	wasted_actions = len(wasted_actions_parent1) + len(wasted_actions_parent2)
-	return wasted_actions
+def calculate_wasted_effort(parents_actions, merge_actions):
+	wasted_actions = parents_actions - merge_actions
+	return (sum(wasted_actions.values()))
 
-def calculate_additional_effort(merge_actions, parents_actions):
+def calculate_additional_effort(parents_actions, merge_actions):
 	additional_actions = merge_actions - parents_actions
-	additional_actions = len(additional_actions)
-	return additional_actions
+	return (sum(additional_actions.values()))
 
 
-def analyse(commits, repo, detailed=False):
+def analyse(commits, repo, normalized=False):
 	commits_metrics = {}
 	try:
 		for commit in commits:
@@ -65,7 +60,7 @@ def analyse(commits, repo, detailed=False):
 					parent1_actions = get_actions(diff_base_parent1)
 					parent2_actions = get_actions(diff_base_parent2)
 
-					commits_metrics[commit.hex] = calculate_metrics(merge_actions, parent1_actions, parent2_actions, detailed)
+					commits_metrics[commit.hex] = calculate_metrics(merge_actions, parent1_actions, parent2_actions, normalized)
 				else:
 					print(commit.hex + " - this merge doesn't have a base version")
 	except:
@@ -77,24 +72,24 @@ def analyse(commits, repo, detailed=False):
 def delete_repo_folder(folder):
 		shutil.rmtree(folder)
 
-def calculate_metrics(merge_actions, parent1_actions, parent2_actions, detailed):	
+def calculate_metrics(merge_actions, parent1_actions, parent2_actions, normalized):	
 	metrics = {}
 
-	parents_actions = set(parent1_actions).union(parent2_actions)
+	parents_actions = parent1_actions + parent2_actions 
 
-	additional_metric = calculate_additional_effort(merge_actions, parents_actions)
-	metrics['merge effort'] = additional_metric/len(merge_actions)
+	if(normalized):
+		metrics['rework'] = calculate_rework(parent1_actions, parent2_actions)/sum(parents_actions.values())
+		metrics['wasted']  = calculate_wasted_effort(parents_actions, merge_actions)/sum(parents_actions.values())
+		metrics['merge_effort'] =calculate_additional_effort(parents_actions, merge_actions)/sum(merge_actions.values())
 
-	if(detailed):
+	else:
 		metrics['branch1'] = len(parent1_actions)
 		metrics['branch2'] = len(parent2_actions)
 		metrics['merge'] = len(merge_actions)
-
 		metrics['rework'] = calculate_rework(parent1_actions, parent2_actions)
-		metrics['wasted']  = calculate_wasted_effort(parent1_actions, parent2_actions, merge_actions)
-		metrics['additional'] = additional_metric
-
-
+		metrics['wasted']  = calculate_wasted_effort(parents_actions, merge_actions)
+		metrics['merge_effort'] = calculate_additional_effort(parents_actions, merge_actions)
+		
 	return metrics
 
 			
@@ -104,7 +99,7 @@ def main():
 	group.add_argument("--url", help="set an url for a git repository")
 	group.add_argument("--local", help="set the path of a local git repository")
 	parser.add_argument("--commit", nargs='+', help="set the commit (or a list of commits separated by comma) to analyse. Default: all merge commits")
-	parser.add_argument("--detailed",action='store_true', help="show all metrics (size of branch1, branch2 and merge, branches rework, wasted actions and additional actions")
+	parser.add_argument("--normalized",action='store_true', help="show all metrics (size of branch1, branch2 and merge, branches rework, wasted actions and additional actions")
 	args = parser.parse_args()
 
 	if args.url:
@@ -121,9 +116,9 @@ def main():
 	else:
 		commits = repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE)
 
-	commits_metrics = analyse(commits, repo, args.detailed)
+	commits_metrics = analyse(commits, repo, args.normalized)
 	print(commits_metrics)
-
+	print("Total of merge commits: " + str(len(commits_metrics)))
 	if args.url:
 		delete_repo_folder(repo.workdir)
 
