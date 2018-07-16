@@ -34,6 +34,7 @@ def calculate_rework(parent1_actions, parent2_actions):
 
 def calculate_wasted_effort(parents_actions, merge_actions):
 	wasted_actions = parents_actions - merge_actions
+
 	return (sum(wasted_actions.values()))
 
 def calculate_additional_effort(parents_actions, merge_actions):
@@ -74,7 +75,7 @@ def delete_repo_folder(folder):
 
 def calculate_metrics(merge_actions, parent1_actions, parent2_actions, normalized):	
 	metrics = {}
-
+	
 	parents_actions = parent1_actions + parent2_actions 
 
 	if(normalized):
@@ -99,7 +100,7 @@ def main():
 	group.add_argument("--url", help="set an url for a git repository")
 	group.add_argument("--local", help="set the path of a local git repository")
 	parser.add_argument("--commit", nargs='+', help="set the commit (or a list of commits separated by comma) to analyse. Default: all merge commits")
-	parser.add_argument("--normalized",action='store_true', help="show all metrics (size of branch1, branch2 and merge, branches rework, wasted actions and additional actions")
+	parser.add_argument("--normalized",action='store_true', help="show metrics normalized")
 	args = parser.parse_args()
 
 	if args.url:
