@@ -81,7 +81,7 @@ def calculate_metrics(merge_actions, parent1_actions, parent2_actions, normalize
 	if(normalized):
 		metrics['rework'] = calculate_rework(parent1_actions, parent2_actions)/sum(parents_actions.values())
 		metrics['wasted']  = calculate_wasted_effort(parents_actions, merge_actions)/sum(parents_actions.values())
-		metrics['merge_effort'] =calculate_additional_effort(parents_actions, merge_actions)/sum(merge_actions.values())
+		metrics['extra'] =calculate_additional_effort(parents_actions, merge_actions)/sum(merge_actions.values())
 
 	else:
 		metrics['branch1'] = len(parent1_actions)
@@ -89,7 +89,7 @@ def calculate_metrics(merge_actions, parent1_actions, parent2_actions, normalize
 		metrics['merge'] = len(merge_actions)
 		metrics['rework'] = calculate_rework(parent1_actions, parent2_actions)
 		metrics['wasted']  = calculate_wasted_effort(parents_actions, merge_actions)
-		metrics['merge_effort'] = calculate_additional_effort(parents_actions, merge_actions)
+		metrics['extra'] = calculate_additional_effort(parents_actions, merge_actions)
 		
 	return metrics
 

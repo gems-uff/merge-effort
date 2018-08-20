@@ -6,7 +6,7 @@ This project aims at analyzing the merge effort of Git projects. In this regard,
 * The number of actions in the merge commit
 * The rework: similar actions in both branches
 * The wasted actions: actions in the branches that were not merged
-* The additional actions: actions not in the branches that were added during the merge
+* The extra actions: actions not in the branches that were added during the merge
 
 ## Getting Started
 
