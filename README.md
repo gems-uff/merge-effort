@@ -90,6 +90,10 @@ merge-effort --url [git_url] --normalized
 * Tayane Silva Fernandes de Moura (UFF, Brazil)
 * Leonardo Gresta Paulino Murta (UFF, Brazil)
 
+## Publications
+
+* [MOURA, T.; MURTA, L. Uma técnica para a quantificação do esforço de merge. . In: VI WORKSHOP ON SOFTWARE VISUALIZATION, EVOLUTION AND MAINTENANCE. 2018](https://github.com/gems-uff/noworkflow/raw/master/docs/VEM_2018.pdf)
+
 
 ## License
 
