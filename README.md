@@ -92,7 +92,7 @@ merge-effort --url [git_url] --normalized
 
 ## Publications
 
-* [MOURA, T.; MURTA, L. Uma técnica para a quantificação do esforço de merge. . In: VI WORKSHOP ON SOFTWARE VISUALIZATION, EVOLUTION AND MAINTENANCE. 2018](https://github.com/gems-uff/noworkflow/raw/master/docs/VEM_2018.pdf)
+* [MOURA, T.; MURTA, L. Uma técnica para a quantificação do esforço de merge. . In: VI WORKSHOP ON SOFTWARE VISUALIZATION, EVOLUTION AND MAINTENANCE. 2018](https://github.com/gems-uff/merge-effort/blob/master/docs/VEM_2018.pdf)
 
 
 ## License
