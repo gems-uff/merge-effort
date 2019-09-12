@@ -10,13 +10,16 @@ import time
 import traceback
 
 
-def get_actions(diff_a_b):
+def get_actions(diff_a_b, file_extensions):
+	
 	actions = Counter()
 	for d in diff_a_b:
 		file_name = d.delta.new_file.path
-		for h in d.hunks:
-			for l in h.lines:
-				actions.update([file_name+l.origin+l.content])
+		file_extension = os.path.splitext(file_name)[1]
+		if( file_extensions is None or file_extension in (file_extensions)):
+			for h in d.hunks:
+				for l in h.lines:
+					actions.update([file_name+l.origin+l.content])
 	return actions
 
 def clone(url):
@@ -42,7 +45,7 @@ def calculate_additional_effort(parents_actions, merge_actions):
 	return (sum(additional_actions.values()))
 
 
-def analyse(commits, repo, normalized=False):
+def analyse(commits, repo, file_extensions, normalized=False):
 	commits_metrics = {}
 	try:
 		for commit in commits:
@@ -57,9 +60,9 @@ def analyse(commits, repo, normalized=False):
 					diff_base_parent1 = repo.diff(base_version, parent1, context_lines=0)
 					diff_base_parent2 = repo.diff(base_version, parent2, context_lines=0)
 
-					merge_actions = get_actions(diff_base_final)
-					parent1_actions = get_actions(diff_base_parent1)
-					parent2_actions = get_actions(diff_base_parent2)
+					merge_actions = get_actions(diff_base_final, file_extensions)
+					parent1_actions = get_actions(diff_base_parent1, file_extensions)
+					parent2_actions = get_actions(diff_base_parent2, file_extensions)
 
 					commits_metrics[commit.hex] = calculate_metrics(merge_actions, parent1_actions, parent2_actions, normalized)
 				else:
@@ -101,6 +104,8 @@ def main():
 	group.add_argument("--local", help="set the path of a local git repository")
 	parser.add_argument("--commit", nargs='+', help="set the commit (or a list of commits separated by comma) to analyse. Default: all merge commits")
 	parser.add_argument("--normalized",action='store_true', help="show metrics normalized")
+	parser.add_argument("--extensions", nargs='+', help="set a file extension (or a list of files extensions separated by comma) to analyse. Default: all file extensions. Example: .py , .txt")
+	
 	args = parser.parse_args()
 
 	if args.url:
@@ -117,7 +122,7 @@ def main():
 	else:
 		commits = repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE)
 
-	commits_metrics = analyse(commits, repo, args.normalized)
+	commits_metrics = analyse(commits, repo, args.extensions, args.normalized)
 	print(commits_metrics)
 	print("Total of merge commits: " + str(len(commits_metrics)))
 	if args.url:
