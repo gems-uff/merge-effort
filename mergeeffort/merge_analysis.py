@@ -9,6 +9,20 @@ import argparse
 import time
 import traceback
 
+def merge_commits(commits):
+	""" Gets all reachable merge commits from a set of commits """
+	visited = set()
+	merges = set()
+
+	while commits:
+		commit = commits.pop()
+		if commit.id not in visited:
+			visited.add(commit.id)
+			commits.update(commit.parents)
+			if len(commit.parents) == 2:
+				merges.add(commit)
+
+	return merges
 
 def get_actions(diff_a_b, file_extensions):
 	
@@ -109,7 +123,8 @@ def main():
 	args = parser.parse_args()
 
 	if args.url:
-		repo = clone(args.url) 
+		repo_aux = clone(args.url) 
+		repo = Repository(repo_aux.workdir)
 
 	elif args.local:
 		repo = Repository(args.local)
@@ -120,7 +135,7 @@ def main():
 			commits.append(repo.get(commit))
 
 	else:
-		commits = repo.walk(repo.head.target, GIT_SORT_TIME | GIT_SORT_REVERSE)
+		commits = list(merge_commits({repo.branches[branch_name].peel() for branch_name in repo.branches}))
 
 	commits_metrics = analyse(commits, repo, args.extensions, args.normalized)
 	print(commits_metrics)
